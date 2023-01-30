@@ -2,10 +2,10 @@
 
 A vue3 project that lets you build a timeline.
 
-## Node Commands
+## Installation
 
 ```
+git clone https://github.com/zManuu/timeline.git
 npm install
 npm run serve
-npm run build
 ```
