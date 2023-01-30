@@ -25,7 +25,7 @@
       class="border-2 w-full rounded py-2"
       value="Bestätigen"
       @click="create"
-      :class="isCreateFormValid() ? 'bg-green-500 border-green-600 cursor-pointer' : 'bg-gray-500 border-gray-600 cursor-not-allowed'" />
+      :class="isCreateFormValid() ? 'bg-green-500 border-green-600 cursor-pointer' : 'bg-gray-500 border-gray-400 cursor-not-allowed'" />
   </div>
   <div class="w-screen h-screen flex justify-center items-center text-white select-none">
     <div class="absolute right-2 bottom-2 flex justify-center gap-2">
@@ -55,14 +55,14 @@
       <icon
         icon="arrow-left"
         v-tooltip="'Nach links scrollen'"
-        @pointerdown="startScroll(-1)"
-        @pointerup="endScroll"
+        @pointerdown="setScroll(-1)"
+        @pointerup="setScroll(undefined)"
         class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer" />
       <icon
         icon="arrow-right"
         v-tooltip="'Nach rechts scrollen'"
-        @pointerdown="startScroll(1)"
-        @pointerup="endScroll"
+        @pointerdown="setScroll(1)"
+        @pointerup="setScroll(undefined)"
         class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer" />
     </div>
     <div class="absolute z-10">
@@ -122,30 +122,24 @@ export default defineComponent({
       leftEnd: Date.parse(START_TIME),
       scrollYears: undefined as undefined | 1 | -1,
       createSection: true,
-      input_title: undefined,
-      input_comment: undefined,
-      input_date: undefined
+      input_title: undefined as string | undefined,
+      input_comment: undefined as string | undefined,
+      input_date: undefined as string | undefined
     }
   },
   methods: {
-    notification(type: number, text: string, ms: number = 500) {
+    notification(type: number, text: string, ms: number = 1000) {
       // @ts-ignore
       this.$refs['notifications'].createNotification(type, text, ms)
     },
     getRightEnd() {
       return this.leftEnd + RIGHT_END_OFFSET
     },
-    isVisible(entry: IEntry) {
-      return (entry.timeStamp > this.leftEnd) && (entry.timeStamp < this.getRightEnd())
-    },
     getVisibleEntries(): IEntry[] {
-      return this.entries.filter(e => this.isVisible(e))
+      return this.entries.filter(e => (e.timeStamp > this.leftEnd) && (e.timeStamp < this.getRightEnd()))
     },
-    startScroll(years: 1 | -1) {
+    setScroll(years: 1 | -1 | undefined) {
       this.scrollYears = years
-    },
-    endScroll() {
-      this.scrollYears = undefined
     },
     getVisibleYears(): number[] {
       return generateItems((RIGHT_END_OFFSET / YEAR), i => {
@@ -209,13 +203,21 @@ export default defineComponent({
     },
     create() {
       if (!this.isCreateFormValid()) return
+
+      const id = Math.floor(Math.random() * 999_999_999_999) * 999_999_999
+      const title = this.input_title as string
+      const comment = this.input_comment as string
+      const date = new Date(this.input_date as string).getTime()
+      console.log("create ~ date", date)
+
       this.entries.push({
-        id: Math.floor(Math.random() * 999_999_999_999) * 999_999_999,
-        title: String(this.input_title),
-        comment: String(this.input_comment),
-        timeStamp: new Date(String(this.input_date)).getMilliseconds()
+        id: id,
+        title: title,
+        comment: comment,
+        timeStamp: date
       })
-      this.notification(1, 'Der Eintrag wurde erstellt.')
+
+      this.notification(1, 'Der Eintrag wurde erstellt.\nVergiss nicht, das Projekt zu speichern!')
     }
   },
   mounted() {

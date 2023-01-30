@@ -9,7 +9,7 @@
                 <icon
                     class="text-xl"
                     :icon="type(notification).icon" />
-                <h1 class="break-all">{{ notification.text }}</h1>
+                <h1 class="whitespace-pre-line">{{ notification.text }}</h1>
             </div>
             <div
                 class="h-1 rounded"
@@ -19,6 +19,8 @@
     </div>
 </template>
 <script lang="ts">
+import { defineComponent } from 'vue'
+
 
 interface INotification {
     _id: number
@@ -28,11 +30,10 @@ interface INotification {
     msLeft: number
 }
 
-export default {
+export default defineComponent({
     data() {
         return {
             
-            // [{ type: number, text: string, msLeft?: number, startMs: number }]
             notifications: [] as INotification[],
 
             // [{ color: string (hex), icon: string }]
@@ -71,6 +72,6 @@ export default {
             }
         }, 1)
     }
-}
+})
 
 </script>
