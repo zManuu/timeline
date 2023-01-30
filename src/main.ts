@@ -9,7 +9,7 @@ import router from '.'
 import * as fontawesome from './utils/fontawesome'
 
 // ICONS
-fontawesome.importIcons('plus', 'arrowLeft', 'arrowRight', 'cloudUpload', 'download', 'infoCircle', 'check', 'triangleExclamation', 'circleExclamation')
+fontawesome.importIcons('plus', 'trash', 'arrowLeft', 'arrowRight', 'cloudUpload', 'download', 'infoCircle', 'check', 'triangleExclamation', 'circleExclamation')
 
 // APP
 const app = createApp(App)

@@ -25,7 +25,7 @@
       class="border-2 w-full rounded py-2"
       value="Bestätigen"
       @click="create"
-      :class="isCreateFormValid() ? 'bg-green-500 border-green-600 cursor-pointer' : 'bg-gray-500 border-gray-400 cursor-not-allowed'" />
+      :class="isCreateFormValid() ? 'bg-green-500 border-green-600 cursor-pointer hover:bg-green-600 hover:border-green-500 transition duration-300' : 'bg-gray-500 border-gray-400 cursor-not-allowed'" />
   </div>
   <div class="w-screen h-screen flex justify-center items-center text-white select-none">
     <div class="absolute right-2 bottom-2 flex justify-center gap-2">
@@ -34,9 +34,9 @@
         icon="plus"
         v-tooltip="'Eintrag erstellen'"
         @click="toggleCreateSection"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer" />
+        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
       <div
-        class="p-3 flex items-center justify-center rounded bg-gray-600 border-gray-500 border-2 cursor-pointer"
+        class="p-3 flex items-center justify-center rounded bg-gray-600 border-gray-500 border-2 cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300"
         v-tooltip="'Projekt laden'"
         @click="uploadFile">
         <icon icon="cloud-upload" />
@@ -51,19 +51,19 @@
         icon="download"
         v-tooltip="'Projekt speichern'"
         @click="save"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer" />
+        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
       <icon
         icon="arrow-left"
         v-tooltip="'Nach links scrollen'"
         @pointerdown="setScroll(-1)"
         @pointerup="setScroll(undefined)"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer" />
+        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
       <icon
         icon="arrow-right"
         v-tooltip="'Nach rechts scrollen'"
         @pointerdown="setScroll(1)"
         @pointerup="setScroll(undefined)"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer" />
+        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
     </div>
     <div class="absolute z-10">
       <!-- ZEITSTRAHL -->
@@ -80,13 +80,22 @@
       <div
         v-for="(entry, index) in getVisibleEntries()"
         :key="index"
-        class="bg-gray-600 border-gray-500 border-2 p-3 rounded-t flex flex-col gap-1 absolute"
+        :ref="`entry-${index}`"
+        class="bg-gray-600 border-gray-500 border-2 rounded-t absolute hover:z-30"
         :style="`left: ${getXPosition(entry)}%;`">
-        <h1 class="font-semibold text-lg">
-          {{ entry.title }}
-        </h1>
-        <h1 class="whitespace-pre-line">{{ entry.comment }}</h1>
-        <h1 class="font-light text-sm">{{ stringify(entry.timeStamp) }}</h1>
+        <div
+          @click="deleteEntry(index)"
+          v-tooltip="`Eintrag löschen (${entry.title})`"
+          class="w-10 h-10 rounded-full bg-red-500 border-red-600 border-2 flex justify-center items-center relative -left-2 -top-2 cursor-pointer">
+          <icon icon="trash" />
+        </div>
+        <div class="p-3 pt-0">
+          <h1 class="font-semibold text-lg">
+            {{ entry.title }}
+          </h1>
+          <h1 class="whitespace-pre-line">{{ entry.comment }}</h1>
+          <h1 class="font-light text-sm">{{ stringify(entry.timeStamp) }}</h1>
+        </div>
       </div>
       <h1
         v-if="entries.length == 0"
@@ -155,7 +164,7 @@ export default defineComponent({
     getXPosition(entry: IEntry) {
       const timeStamp = entry.timeStamp
       const offset = timeStamp - this.leftEnd
-      const offsetYears = Math.abs(new Date(offset).getUTCFullYear() - 1970) + 1
+      const offsetYears = Math.abs(new Date(offset).getUTCFullYear() - 1970)
       return offsetYears * (RIGHT_END_OFFSET / YEAR)
     },
     async handleFileUpload() {
@@ -218,6 +227,9 @@ export default defineComponent({
       })
 
       this.notification(1, 'Der Eintrag wurde erstellt.\nVergiss nicht, das Projekt zu speichern!')
+    },
+    deleteEntry(index: number) {
+      this.entries.splice(index, 1)
     }
   },
   mounted() {
