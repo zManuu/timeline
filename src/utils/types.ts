@@ -7,6 +7,6 @@ interface IProject {
 interface IEntry {
     id: number
     title: string
-    comment: string
+    comment?: string
     timeStamp: number
 }

@@ -2,7 +2,7 @@
   <Notifications ref="notifications" />
   <div
     v-if="createSection"
-    class="z-[70] absolute top-5 left-5 w-[15rem] bg-gray-600 border-gray-500 border-2 rounded p-3 text-white flex flex-col gap-1">
+    class="z-[70] absolute bottom-5 left-5 w-[15rem] bg-gray-600 border-gray-500 border-2 rounded p-3 text-white flex flex-col gap-1">
     <!-- CREATE -->
     <h1>Eintrag erstellen</h1>
     <input
@@ -71,7 +71,7 @@
         <div
           v-for="(time, index) in getVisibleYears()"
           :key="index">
-          <h1>{{ stringifyYear(time) }}</h1>
+          <h1>{{ time }}</h1>
         </div>
       </div>
     </div>
@@ -81,21 +81,23 @@
         v-for="(entry, index) in getVisibleEntries()"
         :key="index"
         :ref="`entry-${index}`"
-        class="bg-gray-600 border-gray-500 border-2 rounded-t absolute hover:z-30"
+        class="bg-gray-600 border-gray-500 border-2 rounded-t absolute hover:z-30 p-3 flex flex-col gap-2.5"
         :style="`left: ${getXPosition(entry)}%;`">
-        <div
-          @click="deleteEntry(index)"
-          v-tooltip="`Eintrag löschen (${entry.title})`"
-          class="w-10 h-10 rounded-full bg-red-500 border-red-600 border-2 flex justify-center items-center relative -left-2 -top-2 cursor-pointer">
-          <icon icon="trash" />
+        <div class="flex justify-between items-center">
+          <input
+            v-model="entry.title"
+            class="font-semibold text-lg input2" />
+          <div
+            @click="deleteEntry(entry)"
+            v-tooltip="`Eintrag löschen (${entry.title})`"
+            class="w-8 h-8 rounded-full bg-red-500 border-red-600 border-2 flex justify-center items-center cursor-pointer">
+            <icon icon="trash" />
+          </div>
         </div>
-        <div class="p-3 pt-0">
-          <h1 class="font-semibold text-lg">
-            {{ entry.title }}
-          </h1>
-          <h1 class="whitespace-pre-line">{{ entry.comment }}</h1>
-          <h1 class="font-light text-sm">{{ stringify(entry.timeStamp) }}</h1>
-        </div>
+        <textarea
+          class="whitespace-pre-line input2 resize max-h-[20rem] max-w-[25rem] min-h-min min-w-min"
+          v-model="entry.comment"></textarea>
+        <h1 class="font-light text-sm">{{ stringify(entry.timeStamp) }}</h1>
       </div>
       <h1
         v-if="entries.length == 0"
@@ -115,7 +117,7 @@ import { defineComponent } from 'vue'
 import { generateItems } from '../utils/generator'
 import Notifications from './Notifications.vue'
 
-const requiredProperties = ['id', 'title', 'comment', 'timeStamp']
+const requiredProperties = ['id', 'title', 'timeStamp']
 const isIEntryArray = (arr: any): arr is IEntry[] => {
   return Array.isArray(arr) && arr.every(entry => 
     requiredProperties.every(prop => entry.hasOwnProperty(prop))
@@ -151,12 +153,9 @@ export default defineComponent({
       this.scrollYears = years
     },
     getVisibleYears(): number[] {
-      return generateItems((RIGHT_END_OFFSET / YEAR), i => {
-        return this.leftEnd + i * YEAR
-      })
-    },
-    stringifyYear(timeStamp: number) {
-      return new Date(timeStamp).getFullYear()
+      const leftEndYear = new Date(this.leftEnd).getFullYear()
+      const yearsDisplayed = RIGHT_END_OFFSET / YEAR + 1
+      return generateItems(yearsDisplayed, i => leftEndYear + i)
     },
     stringify(timeStamp: number) {
       return new Date(timeStamp).toLocaleDateString()
@@ -164,7 +163,7 @@ export default defineComponent({
     getXPosition(entry: IEntry) {
       const timeStamp = entry.timeStamp
       const offset = timeStamp - this.leftEnd
-      const offsetYears = Math.abs(new Date(offset).getUTCFullYear() - 1970)
+      const offsetYears = Math.abs(new Date(offset).getFullYear() - 1970)
       return offsetYears * (RIGHT_END_OFFSET / YEAR)
     },
     async handleFileUpload() {
@@ -208,16 +207,15 @@ export default defineComponent({
       this.createSection = !this.createSection
     },
     isCreateFormValid() {
-      return this.input_title && this.input_comment && this.input_date
+      return this.input_title && this.input_date
     },
     create() {
       if (!this.isCreateFormValid()) return
 
       const id = Math.floor(Math.random() * 999_999_999_999) * 999_999_999
       const title = this.input_title as string
-      const comment = this.input_comment as string
+      const comment = this.input_comment
       const date = new Date(this.input_date as string).getTime()
-      console.log("create ~ date", date)
 
       this.entries.push({
         id: id,
@@ -228,7 +226,8 @@ export default defineComponent({
 
       this.notification(1, 'Der Eintrag wurde erstellt.\nVergiss nicht, das Projekt zu speichern!')
     },
-    deleteEntry(index: number) {
+    deleteEntry(entry: IEntry) {
+      const index = this.entries.indexOf(entry)
       this.entries.splice(index, 1)
     }
   },
