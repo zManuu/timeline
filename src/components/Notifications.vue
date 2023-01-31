@@ -20,16 +20,6 @@
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue'
-
-
-interface INotification {
-    _id: number
-    type: number
-    text: string
-    startMs: number
-    msLeft: number
-}
-
 export default defineComponent({
     data() {
         return {

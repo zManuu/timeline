@@ -10,3 +10,11 @@ interface IEntry {
     comment?: string
     timeStamp: number
 }
+
+interface INotification {
+    _id: number
+    type: number
+    text: string
+    startMs: number
+    msLeft: number
+}

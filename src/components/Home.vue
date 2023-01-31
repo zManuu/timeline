@@ -1,4 +1,5 @@
 <template>
+  <!-- <h1 class="text-white">{{ zoomLevel }}</h1> -->
   <Notifications ref="notifications" />
   <div
     v-if="createSection"
@@ -64,14 +65,28 @@
         @pointerdown="setScroll(1)"
         @pointerup="setScroll(undefined)"
         class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
+      <icon
+        icon="magnifying-glass-plus"
+        v-tooltip="'Reinzoomen'"
+        @pointerdown="setZoom(-1)"
+        @pointerup="setZoom(undefined)"
+        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
+      <icon
+        icon="magnifying-glass-minus"
+        v-tooltip="'Rauszoomen'"
+        @pointerdown="setZoom(1)"
+        @pointerup="setZoom(undefined)"
+        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
     </div>
     <div class="absolute z-10">
       <!-- ZEITSTRAHL -->
-      <div class="w-screen h-0.5 bg-white flex justify-between">
+      <div class="w-screen h-0.5 bg-white">
         <div
           v-for="(time, index) in getVisibleYears()"
-          :key="index">
-          <h1>{{ time }}</h1>
+          :key="index"
+          class="absolute"
+          :style="`left: ${time[1]}%;`">
+          <h1>{{ time[0] }}</h1>
         </div>
       </div>
     </div>
@@ -95,15 +110,10 @@
           </div>
         </div>
         <textarea
-          class="whitespace-pre-line input2 resize max-h-[20rem] max-w-[25rem] min-h-min min-w-min"
+          class="whitespace-pre-line input2 resize max-h-[20rem] max-w-[25rem] min-h-[10rem] min-w-[17.5rem]"
           v-model="entry.comment"></textarea>
         <h1 class="font-light text-sm">{{ stringify(entry.timeStamp) }}</h1>
       </div>
-      <h1
-        v-if="entries.length == 0"
-        class="mb-2 ml-2 text-xl font-semibold">
-        Keine Einträge gefunden.
-      </h1>
     </div>
   </div>
 </template>
@@ -111,10 +121,8 @@
 
 const START_TIME = '1930-01-01'
 const YEAR = 31_536_000_000
-const RIGHT_END_OFFSET = YEAR * 10
 
 import { defineComponent } from 'vue'
-import { generateItems } from '../utils/generator'
 import Notifications from './Notifications.vue'
 
 const requiredProperties = ['id', 'title', 'timeStamp']
@@ -124,7 +132,6 @@ const isIEntryArray = (arr: any): arr is IEntry[] => {
   )
 }
 
-
 export default defineComponent({
   components: { Notifications },
   data() {
@@ -132,10 +139,12 @@ export default defineComponent({
       entries: [] as IEntry[],
       leftEnd: Date.parse(START_TIME),
       scrollYears: undefined as undefined | 1 | -1,
-      createSection: true,
+      createSection: false,
       input_title: undefined as string | undefined,
       input_comment: undefined as string | undefined,
-      input_date: undefined as string | undefined
+      input_date: undefined as string | undefined,
+      zoomLevel: 10, // Anzahl an Jahren, die zu sehen sind (Max: 50, Min: 1)
+      zoom: undefined as undefined | 1 | -1
     }
   },
   methods: {
@@ -144,7 +153,7 @@ export default defineComponent({
       this.$refs['notifications'].createNotification(type, text, ms)
     },
     getRightEnd() {
-      return this.leftEnd + RIGHT_END_OFFSET
+      return this.leftEnd + this.zoomLevel * YEAR
     },
     getVisibleEntries(): IEntry[] {
       return this.entries.filter(e => (e.timeStamp > this.leftEnd) && (e.timeStamp < this.getRightEnd()))
@@ -152,19 +161,33 @@ export default defineComponent({
     setScroll(years: 1 | -1 | undefined) {
       this.scrollYears = years
     },
-    getVisibleYears(): number[] {
-      const leftEndYear = new Date(this.leftEnd).getFullYear()
-      const yearsDisplayed = RIGHT_END_OFFSET / YEAR + 1
-      return generateItems(yearsDisplayed, i => leftEndYear + i)
+    setZoom(zoom: undefined | 1 | -1) {
+      this.zoom = zoom
+    },
+    getVisibleYears(): [string, number][] {
+      const start = this.leftEnd
+      const res: [string, number][] = []
+      for (let i=0; i<this.zoomLevel; i++) {
+        const timeStamp = start + (i * YEAR)
+        const date = new Date(timeStamp).toLocaleDateString()
+        const offset = Math.abs(timeStamp - this.leftEnd)
+        const yearsDisplayed = this.zoomLevel
+        const offsetPerYear = 100 / yearsDisplayed
+        const r = offsetPerYear * (offset / YEAR)
+        res.push([date, r])
+      }
+      return res
     },
     stringify(timeStamp: number) {
       return new Date(timeStamp).toLocaleDateString()
     },
     getXPosition(entry: IEntry) {
       const timeStamp = entry.timeStamp
-      const offset = timeStamp - this.leftEnd
-      const offsetYears = Math.abs(new Date(offset).getFullYear() - 1970)
-      return offsetYears * (RIGHT_END_OFFSET / YEAR)
+      const offset = Math.abs(timeStamp - this.leftEnd)
+      const yearsDisplayed = this.zoomLevel
+      const offsetPerYear = 100 / yearsDisplayed
+      const res = offsetPerYear * (offset / YEAR)
+      return res
     },
     async handleFileUpload() {
       try {
@@ -191,7 +214,7 @@ export default defineComponent({
     },
     save() {
       if (this.entries.length == 0) {
-        this.notification(3, 'Du hast keine Einträge erstellt.')
+        this.notification(2, 'Du hast keine Einträge erstellt.')
         return
       }
       const jsonEntries = JSON.stringify(this.entries)
@@ -235,6 +258,14 @@ export default defineComponent({
     setInterval(() => {
       if (typeof this.scrollYears != 'undefined')
         this.leftEnd += this.scrollYears * (YEAR / 20)
+      
+      if (typeof this.zoom != 'undefined') {
+          this.zoomLevel += (this.zoom * 0.05)
+        if (this.zoomLevel < 1)
+          this.zoomLevel = 1
+        if (this.zoomLevel > 50)
+          this.zoomLevel = 50
+      }
     }, 1)
   }
 })
