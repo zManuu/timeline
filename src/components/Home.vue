@@ -163,20 +163,17 @@ export default defineComponent({
       this.zoom = zoom
     },
     getVisibleDates(): [string, number][] {
-      const start = this.leftEnd
-      const zoom = this.zoomLevel
-      const end = 100 / zoom // offset to the left in years
-      const timeOffsetPerZoom = YEAR / end
-      const offsetPerZoom = end / DATES_VISIBLE / 100 // 0-1
-      console.log("getVisibleDates ~ offsetPerZoom", offsetPerZoom)
       const res: [string, number][] = []
+      const left = this.leftEnd
+      const right = this.getRightEnd()
+      const offsetLeftRight = Math.abs(left - right)
+      const timeOffsetPerDate = offsetLeftRight / DATES_VISIBLE
+      const posOffsetPerDate = 100 / DATES_VISIBLE
       for (let i=0; i<DATES_VISIBLE; i++) {
-        const timeStamp = start + (i * timeOffsetPerZoom)
-        const date = new Date(timeStamp).toLocaleDateString()
-        console.log(`${i} = ${date}`)
-        const offset = Math.abs(this.leftEnd - timeStamp) * offsetPerZoom
-        console.log("getVisibleDates ~ offset", offset)
-        res.push([date, offset])
+        const timeStamp = left + (i * timeOffsetPerDate)
+        const display = new Date(timeStamp).toLocaleDateString()
+        const x = i * posOffsetPerDate
+        res.push([ display, x ])
       }
       return res
     },
