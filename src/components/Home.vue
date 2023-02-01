@@ -82,7 +82,7 @@
       <!-- ZEITSTRAHL -->
       <div class="w-screen h-0.5 bg-white">
         <div
-          v-for="(time, index) in getVisibleYears()"
+          v-for="(time, index) in getVisibleDates()"
           :key="index"
           class="absolute"
           :style="`left: ${time[1]}%;`">
@@ -121,15 +121,13 @@
 
 const START_TIME = '1930-01-01'
 const YEAR = 31_536_000_000
+const DATES_VISIBLE = 10
 
 import { defineComponent } from 'vue'
 import Notifications from './Notifications.vue'
 
-const requiredProperties = ['id', 'title', 'timeStamp']
-const isIEntryArray = (arr: any): arr is IEntry[] => {
-  return Array.isArray(arr) && arr.every(entry => 
-    requiredProperties.every(prop => entry.hasOwnProperty(prop))
-  )
+function isIEntryArray (arr: any): arr is IEntry[] {
+  return Array.isArray(arr) && arr.every(entry => ['id', 'title', 'timeStamp'].every(prop => entry.hasOwnProperty(prop)))
 }
 
 export default defineComponent({
@@ -164,17 +162,21 @@ export default defineComponent({
     setZoom(zoom: undefined | 1 | -1) {
       this.zoom = zoom
     },
-    getVisibleYears(): [string, number][] {
+    getVisibleDates(): [string, number][] {
       const start = this.leftEnd
+      const zoom = this.zoomLevel
+      const end = 100 / zoom // offset to the left in years
+      const timeOffsetPerZoom = YEAR / end
+      const offsetPerZoom = end / DATES_VISIBLE / 100 // 0-1
+      console.log("getVisibleDates ~ offsetPerZoom", offsetPerZoom)
       const res: [string, number][] = []
-      for (let i=0; i<this.zoomLevel; i++) {
-        const timeStamp = start + (i * YEAR)
+      for (let i=0; i<DATES_VISIBLE; i++) {
+        const timeStamp = start + (i * timeOffsetPerZoom)
         const date = new Date(timeStamp).toLocaleDateString()
-        const offset = Math.abs(timeStamp - this.leftEnd)
-        const yearsDisplayed = this.zoomLevel
-        const offsetPerYear = 100 / yearsDisplayed
-        const r = offsetPerYear * (offset / YEAR)
-        res.push([date, r])
+        console.log(`${i} = ${date}`)
+        const offset = Math.abs(this.leftEnd - timeStamp) * offsetPerZoom
+        console.log("getVisibleDates ~ offset", offset)
+        res.push([date, offset])
       }
       return res
     },

@@ -12,9 +12,15 @@ interface IEntry {
 }
 
 interface INotification {
-    _id: number
-    type: number
+    id: number
+    type: INotificationType
     text: string
     startMs: number
     msLeft: number
+}
+
+interface INotificationType {
+    color: string
+    darkerColor: string
+    icon: string
 }

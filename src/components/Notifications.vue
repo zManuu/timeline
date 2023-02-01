@@ -4,16 +4,16 @@
             v-for="(notification, index) in notifications.sort(e => (e.msLeft))"
             :key="index"
             class="rounded max-w-xs opacity-75"
-            :style="`background: ${type(notification).color}; filter: drop-shadow(0 5px 5px ${type(notification).color});`">
+            :style="`background: ${notification.type.color}; filter: drop-shadow(0 5px 5px ${notification.type.color});`">
             <div class="flex justify-evenly items-center gap-5 p-5">
                 <icon
                     class="text-xl"
-                    :icon="type(notification).icon" />
+                    :icon="notification.type.icon" />
                 <h1 class="whitespace-pre-line">{{ notification.text }}</h1>
             </div>
             <div
                 class="h-1 rounded"
-                :style="`width: ${(notification.msLeft / notification.startMs) * 100}%; background: ${type(notification).darkerColor};`">
+                :style="`width: ${(notification.msLeft / notification.startMs) * 100}%; background: ${notification.type.darkerColor};`">
             </div>
         </div>
     </div>
@@ -23,31 +23,24 @@ import { defineComponent } from 'vue'
 export default defineComponent({
     data() {
         return {
-            
             notifications: [] as INotification[],
-
-            // [{ color: string (hex), icon: string }]
             types: [
                 { color: '#3498DB', darkerColor: '#2E86C1', icon: 'info-circle' },
                 { color: '#2ECC71', darkerColor: '#28B463', icon: 'check' },
                 { color: '#F39C12', darkerColor: '#D68910', icon: 'triangle-exclamation' },
                 { color: '#E74C3C', darkerColor: '#CB4335', icon: 'circle-exclamation' }
-            ],
-
+            ] as INotificationType[],
         }
     },
     methods: {
         createNotification(type: number, text: string, ms: number) {
             this.notifications.push({
-                _id: Math.floor(Math.random() * 999_999_999_999),
-                type: type,
+                id: Math.floor(Math.random() * 999_999_999_999),
+                type: this.types[type],
                 text: text,
                 msLeft: ms,
                 startMs: ms
             })
-        },
-        type(notification: INotification) {
-            return this.types[notification.type]
         }
     },
     mounted() {
