@@ -256,7 +256,7 @@ export default defineComponent({
   mounted() {
     setInterval(() => {
       if (typeof this.scrollYears != 'undefined')
-        this.leftEnd += this.scrollYears * (YEAR / 20)
+        this.leftEnd += this.scrollYears * (YEAR / 100) * this.zoomLevel
       
       if (typeof this.zoom != 'undefined') {
           this.zoomLevel += (this.zoom * 0.05)
