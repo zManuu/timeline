@@ -102,10 +102,16 @@
             placeholder="Beschreibung"
             v-model="editedEntry.comment"
             class="input resize-y min-h-[5rem] max-h-[20rem]"></textarea>
-          <input
-            type="date"
-            v-model="input_edit_date"
-            class="input" />
+          <div class="flex justify-between items-center">
+            <input
+              type="date"
+              v-model="input_edit_date"
+              class="input w-[47.5%]" />
+            <input
+              type="color"
+              v-model="editedEntry.color"
+              class="w-[47.5%]" />
+          </div>
           <button
             @click="deleteEntry()"
             class="bg-red-600 border-red-700 border-2 rounded py-2"
@@ -134,16 +140,17 @@
         :key="index"
         :ref="`entry-${index}`"
         @click="editEntry(entry)"
-        class="bg-gray-600 border-gray-500 border-2 rounded-t absolute hover:z-30 p-3 flex flex-col gap-2.5"
-        :style="`left: ${getXPosition(entry)}%;`">
+        v-tooltip="'Klicke, um zu bearbeiten'"
+        class="border-gray-500 border-2 rounded-t absolute hover:z-30 p-3 flex flex-col gap-2.5 cursor-pointer"
+        :style="`left: ${getXPosition(entry)}%; background: ${getBG(entry)};`">
         <div class="flex justify-between items-center">
-          <h1 class="font-semibold text-lg input2">
+          <h1 class="font-semibold text-lg">
             {{ entry.title }}
           </h1>
         </div>
         <h1
           v-if="entry.comment"
-          class="whitespace-pre-line input2">
+          class="whitespace-pre-line">
           {{ entry.comment }}
         </h1>
         <h1 class="font-light text-sm">{{ stringify(entry.timeStamp) }}</h1>
@@ -223,6 +230,9 @@ export default defineComponent({
       const offsetPerYear = 100 / yearsDisplayed
       const res = offsetPerYear * (offset / YEAR)
       return res
+    },
+    getBG(entry: IEntry) {
+      return entry.color ? entry.color : 'rgb(75, 85, 99)'
     },
     async handleFileUpload() {
       try {
