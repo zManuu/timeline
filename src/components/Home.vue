@@ -10,17 +10,17 @@
       class="input w-full"
       placeholder="Titel"
       type="text"
-      v-model="input_title" />
+      v-model="input_create_title" />
     <textarea
       class="input w-full resize-none h-[10rem]"
       placeholder="Text"
-      v-model="input_comment">
+      v-model="input_create_comment">
     </textarea>
     <input
       class="input w-full"
       placeholder="Titel"
       type="date"
-      v-model="input_date" />
+      v-model="input_create_date" />
     <input
       type="submit"
       class="border-2 w-full rounded py-2"
@@ -78,6 +78,43 @@
         @pointerup="setZoom(undefined)"
         class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
     </div>
+    <div
+      v-if="editedEntry"
+      class="absolute z-40 w-screen h-screen bg-black bg-opacity-75 flex items-center justify-center">
+      <div class="bg-gray-800 border-gray-700 border-2 w-[30rem] rounded p-3">
+        <div class="flex justify-between items-center">
+          <h1 class="font-semibold text-lg">Eintrag Bearbeiten</h1>
+          <div
+            @click="editEntry(undefined)"
+            v-tooltip="'Schließen'"
+            class="bg-red-500 border-2 border-red-600 w-8 h-8 rounded flex justify-center items-center cursor-pointer">
+            <icon icon="xmark" />
+          </div>
+        </div>
+        <div class="flex flex-col gap-2 w-3/4 m-auto mt-5">
+          <input
+            placeholder="Titel"
+            maxlength="50"
+            minlength="1"
+            v-model="editedEntry.title"
+            class="input" />
+          <textarea
+            placeholder="Beschreibung"
+            v-model="editedEntry.comment"
+            class="input resize-y min-h-[5rem] max-h-[20rem]"></textarea>
+          <input
+            type="date"
+            v-model="input_edit_date"
+            class="input" />
+          <button
+            @click="deleteEntry()"
+            class="bg-red-600 border-red-700 border-2 rounded py-2"
+            v-tooltip="'NICHT RÜCKGÄNGIG ZU MACHEN'">
+            Eintrag LÖSCHEN
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="absolute z-10">
       <!-- ZEITSTRAHL -->
       <div class="w-screen h-0.5 bg-white">
@@ -90,28 +127,25 @@
         </div>
       </div>
     </div>
-    <div class="absolute z-50 w-full h-1/2 flex items-end top-0">
+    <div class="absolute z-30 w-full h-1/2 flex items-end top-0">
       <!-- ENTRIES -->
       <div
         v-for="(entry, index) in getVisibleEntries()"
         :key="index"
         :ref="`entry-${index}`"
+        @click="editEntry(entry)"
         class="bg-gray-600 border-gray-500 border-2 rounded-t absolute hover:z-30 p-3 flex flex-col gap-2.5"
         :style="`left: ${getXPosition(entry)}%;`">
         <div class="flex justify-between items-center">
-          <input
-            v-model="entry.title"
-            class="font-semibold text-lg input2" />
-          <div
-            @click="deleteEntry(entry)"
-            v-tooltip="`Eintrag löschen (${entry.title})`"
-            class="w-8 h-8 rounded-full bg-red-500 border-red-600 border-2 flex justify-center items-center cursor-pointer">
-            <icon icon="trash" />
-          </div>
+          <h1 class="font-semibold text-lg input2">
+            {{ entry.title }}
+          </h1>
         </div>
-        <textarea
-          class="whitespace-pre-line input2 resize max-h-[20rem] max-w-[25rem] min-h-[10rem] min-w-[17.5rem]"
-          v-model="entry.comment"></textarea>
+        <h1
+          v-if="entry.comment"
+          class="whitespace-pre-line input2">
+          {{ entry.comment }}
+        </h1>
         <h1 class="font-light text-sm">{{ stringify(entry.timeStamp) }}</h1>
       </div>
     </div>
@@ -132,11 +166,19 @@ export default defineComponent({
     return {
       project: EmptyProject,
       scrollYears: undefined as undefined | 1 | -1,
+      zoom: undefined as undefined | 1 | -1,
       createSection: false,
-      input_title: undefined as string | undefined,
-      input_comment: undefined as string | undefined,
-      input_date: undefined as string | undefined,
-      zoom: undefined as undefined | 1 | -1
+      input_create_title: undefined as string | undefined,
+      input_create_comment: undefined as string | undefined,
+      input_create_date: undefined as string | undefined,
+      input_edit_date: undefined as string | undefined,
+      editedEntry: undefined as IEntry | undefined
+    }
+  },
+  watch: {
+    input_edit_date(val: string | undefined) {
+      if (!val) return
+      this.editedEntry!.timeStamp = Date.parse(val)
     }
   },
   methods: {
@@ -219,15 +261,15 @@ export default defineComponent({
       this.createSection = !this.createSection
     },
     isCreateFormValid() {
-      return this.input_title && this.input_date
+      return this.input_create_title && this.input_create_date
     },
     create() {
       if (!this.isCreateFormValid()) return
 
       const id = Math.floor(Math.random() * 999_999_999_999) * 999_999_999
-      const title = this.input_title as string
-      const comment = this.input_comment
-      const date = new Date(this.input_date as string).getTime()
+      const title = this.input_create_title as string
+      const comment = this.input_create_comment
+      const date = new Date(this.input_create_date as string).getTime()
 
       this.project.entries.push({
         id: id,
@@ -238,9 +280,14 @@ export default defineComponent({
 
       this.notification(1, 'Der Eintrag wurde erstellt.\nVergiss nicht, das Projekt zu speichern!')
     },
-    deleteEntry(entry: IEntry) {
+    deleteEntry() {
+      const entry = this.editedEntry!
+      this.editedEntry = undefined
       const index = this.project.entries.indexOf(entry)
       this.project.entries.splice(index, 1)
+    },
+    editEntry(entry: IEntry | undefined) {
+      this.editedEntry = entry
     }
   },
   mounted() {
