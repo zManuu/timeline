@@ -56,26 +56,14 @@
       <icon
         icon="arrow-left"
         v-tooltip="'Nach links scrollen'"
-        @pointerdown="setScroll(-1)"
-        @pointerup="setScroll(undefined)"
+        @mouseover="setScroll(-1)"
+        @mouseleave="setScroll(undefined)"
         class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
       <icon
         icon="arrow-right"
         v-tooltip="'Nach rechts scrollen'"
-        @pointerdown="setScroll(1)"
-        @pointerup="setScroll(undefined)"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
-      <icon
-        icon="magnifying-glass-plus"
-        v-tooltip="'Reinzoomen'"
-        @pointerdown="setZoom(-1)"
-        @pointerup="setZoom(undefined)"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
-      <icon
-        icon="magnifying-glass-minus"
-        v-tooltip="'Rauszoomen'"
-        @pointerdown="setZoom(1)"
-        @pointerup="setZoom(undefined)"
+        @mouseover="setScroll(1)"
+        @mouseleave="setScroll(undefined)"
         class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
     </div>
     <div
@@ -175,7 +163,6 @@ export default defineComponent({
     return {
       project: EmptyProject,
       scrollYears: undefined as undefined | 1 | -1,
-      zoom: undefined as undefined | 1 | -1,
       createSection: false,
       input_create_title: undefined as string | undefined,
       input_create_comment: undefined as string | undefined,
@@ -203,9 +190,6 @@ export default defineComponent({
     },
     setScroll(years: 1 | -1 | undefined) {
       this.scrollYears = years
-    },
-    setZoom(zoom: undefined | 1 | -1) {
-      this.zoom = zoom
     },
     getVisibleDates(): [string, number][] {
       const res: [string, number][] = []
@@ -300,21 +284,24 @@ export default defineComponent({
     },
     editEntry(entry: IEntry | undefined) {
       this.editedEntry = entry
+    },
+    handleScroll(ev: WheelEvent) {
+      this.project.zoomLevel += ev.deltaY / 100
+      if (this.project.zoomLevel < ZOOM_MIN)
+        this.project.zoomLevel = ZOOM_MIN
+      if (this.project.zoomLevel > ZOOM_MAX)
+        this.project.zoomLevel = ZOOM_MAX
     }
   },
   mounted() {
     setInterval(() => {
+      // left/right
       if (typeof this.scrollYears != 'undefined')
         this.project.leftEnd += this.scrollYears * (YEAR / 100) * this.project.zoomLevel
-      
-      if (typeof this.zoom != 'undefined') {
-          this.project.zoomLevel += (this.zoom * 0.05)
-        if (this.project.zoomLevel < ZOOM_MIN)
-          this.project.zoomLevel = ZOOM_MIN
-        if (this.project.zoomLevel > ZOOM_MAX)
-          this.project.zoomLevel = ZOOM_MAX
-      }
     }, 1)
+
+    // zoom
+    window.addEventListener('wheel', this.handleScroll)
   }
 })
 </script>
