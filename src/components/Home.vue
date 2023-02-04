@@ -29,7 +29,7 @@
       :class="isCreateFormValid() ? 'bg-green-500 border-green-600 cursor-pointer hover:bg-green-600 hover:border-green-500 transition duration-300' : 'bg-gray-500 border-gray-400 cursor-not-allowed'" />
   </div>
   <div class="w-screen h-screen flex justify-center items-center text-white select-none">
-    <div class="absolute right-2 bottom-2 flex justify-center gap-2">
+    <div class="absolute right-5 bottom-5 flex justify-center gap-2">
       <!-- CONTROLS -->
       <icon
         icon="plus"
@@ -162,6 +162,8 @@
 
 const YEAR = 31_536_000_000
 const DATES_VISIBLE = 10
+const ZOOM_MIN = 0.1
+const ZOOM_MAX = 200
 
 import { defineComponent } from 'vue'
 import Notifications from './Notifications.vue'
@@ -307,10 +309,10 @@ export default defineComponent({
       
       if (typeof this.zoom != 'undefined') {
           this.project.zoomLevel += (this.zoom * 0.05)
-        if (this.project.zoomLevel < 1)
-          this.project.zoomLevel = 1
-        if (this.project.zoomLevel > 50)
-          this.project.zoomLevel = 50
+        if (this.project.zoomLevel < ZOOM_MIN)
+          this.project.zoomLevel = ZOOM_MIN
+        if (this.project.zoomLevel > ZOOM_MAX)
+          this.project.zoomLevel = ZOOM_MAX
       }
     }, 1)
   }
