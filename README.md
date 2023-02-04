@@ -6,6 +6,10 @@ A vue3 project that lets you build a timeline.
 
 https://streamable.com/cllgwp
 
+### Examples
+
+[German History](examples/german_history.json)
+
 ## Installation
 
 ```
