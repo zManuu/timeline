@@ -3,7 +3,7 @@
   <Notifications ref="notifications" />
   <div
     v-if="createSection"
-    class="z-[70] absolute bottom-5 left-5 w-[15rem] bg-gray-600 border-gray-500 border-2 rounded p-3 text-white flex flex-col gap-1">
+    class="z-[35] absolute top-5 left-5 w-[15rem] bg-gray-600 border-gray-500 border-2 rounded p-3 text-white flex flex-col gap-1">
     <!-- CREATE -->
     <h1>Eintrag erstellen</h1>
     <input
@@ -121,7 +121,7 @@
         </div>
       </div>
     </div>
-    <div class="absolute z-10">
+    <div class="absolute z-10 bottom-1/3">
       <!-- ZEITSTRAHL -->
       <div class="w-screen h-0.5 bg-white">
         <div
@@ -133,7 +133,7 @@
         </div>
       </div>
     </div>
-    <div class="absolute z-30 w-full h-1/2 flex items-end top-0">
+    <div class="absolute z-30 w-full h-2/3 flex items-end top-0">
       <!-- ENTRIES -->
       <div
         v-for="(entry, index) in getVisibleEntries()"
