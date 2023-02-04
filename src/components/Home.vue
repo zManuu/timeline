@@ -119,29 +119,23 @@
 </template>
 <script lang="ts">
 
-const START_TIME = '1930-01-01'
 const YEAR = 31_536_000_000
 const DATES_VISIBLE = 10
 
 import { defineComponent } from 'vue'
 import Notifications from './Notifications.vue'
-
-function isIEntryArray (arr: any): arr is IEntry[] {
-  return Array.isArray(arr) && arr.every(entry => ['id', 'title', 'timeStamp'].every(prop => entry.hasOwnProperty(prop)))
-}
+import { EmptyProject, isIProject } from '@/utils/emptyProject'
 
 export default defineComponent({
   components: { Notifications },
   data() {
     return {
-      entries: [] as IEntry[],
-      leftEnd: Date.parse(START_TIME),
+      project: EmptyProject,
       scrollYears: undefined as undefined | 1 | -1,
       createSection: false,
       input_title: undefined as string | undefined,
       input_comment: undefined as string | undefined,
       input_date: undefined as string | undefined,
-      zoomLevel: 10, // Anzahl an Jahren, die zu sehen sind (Max: 50, Min: 1)
       zoom: undefined as undefined | 1 | -1
     }
   },
@@ -151,10 +145,10 @@ export default defineComponent({
       this.$refs['notifications'].createNotification(type, text, ms)
     },
     getRightEnd() {
-      return this.leftEnd + this.zoomLevel * YEAR
+      return this.project.leftEnd + this.project.zoomLevel * YEAR
     },
     getVisibleEntries(): IEntry[] {
-      return this.entries.filter(e => (e.timeStamp > this.leftEnd) && (e.timeStamp < this.getRightEnd()))
+      return this.project.entries.filter(e => (e.timeStamp > this.project.leftEnd) && (e.timeStamp < this.getRightEnd()))
     },
     setScroll(years: 1 | -1 | undefined) {
       this.scrollYears = years
@@ -164,7 +158,7 @@ export default defineComponent({
     },
     getVisibleDates(): [string, number][] {
       const res: [string, number][] = []
-      const left = this.leftEnd
+      const left = this.project.leftEnd
       const right = this.getRightEnd()
       const offsetLeftRight = Math.abs(left - right)
       const timeOffsetPerDate = offsetLeftRight / DATES_VISIBLE
@@ -182,8 +176,8 @@ export default defineComponent({
     },
     getXPosition(entry: IEntry) {
       const timeStamp = entry.timeStamp
-      const offset = Math.abs(timeStamp - this.leftEnd)
-      const yearsDisplayed = this.zoomLevel
+      const offset = Math.abs(timeStamp - this.project.leftEnd)
+      const yearsDisplayed = this.project.zoomLevel
       const offsetPerYear = 100 / yearsDisplayed
       const res = offsetPerYear * (offset / YEAR)
       return res
@@ -194,12 +188,12 @@ export default defineComponent({
         if (!fileElement || !fileElement.files) return
         const file = fileElement.files[0]
         const text = await file.text()
-        const entries: unknown = JSON.parse(text)
+        const project: unknown = JSON.parse(text)
 
-        if (!isIEntryArray(entries))
+        if (!isIProject(project))
           throw 'UNKNOWN FORMAT!'
 
-        this.entries = entries
+        this.project = project
 
         this.notification(1, 'Die Datei wurde erfolgreich importiert.')
       } catch(e) {
@@ -212,11 +206,7 @@ export default defineComponent({
       fileElement.click()
     },
     save() {
-      if (this.entries.length == 0) {
-        this.notification(2, 'Du hast keine Einträge erstellt.')
-        return
-      }
-      const jsonEntries = JSON.stringify(this.entries)
+      const jsonEntries = JSON.stringify(this.project)
       const blob = new Blob([jsonEntries], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const downloadElement = document.createElement('a')
@@ -239,7 +229,7 @@ export default defineComponent({
       const comment = this.input_comment
       const date = new Date(this.input_date as string).getTime()
 
-      this.entries.push({
+      this.project.entries.push({
         id: id,
         title: title,
         comment: comment,
@@ -249,21 +239,21 @@ export default defineComponent({
       this.notification(1, 'Der Eintrag wurde erstellt.\nVergiss nicht, das Projekt zu speichern!')
     },
     deleteEntry(entry: IEntry) {
-      const index = this.entries.indexOf(entry)
-      this.entries.splice(index, 1)
+      const index = this.project.entries.indexOf(entry)
+      this.project.entries.splice(index, 1)
     }
   },
   mounted() {
     setInterval(() => {
       if (typeof this.scrollYears != 'undefined')
-        this.leftEnd += this.scrollYears * (YEAR / 100) * this.zoomLevel
+        this.project.leftEnd += this.scrollYears * (YEAR / 100) * this.project.zoomLevel
       
       if (typeof this.zoom != 'undefined') {
-          this.zoomLevel += (this.zoom * 0.05)
-        if (this.zoomLevel < 1)
-          this.zoomLevel = 1
-        if (this.zoomLevel > 50)
-          this.zoomLevel = 50
+          this.project.zoomLevel += (this.zoom * 0.05)
+        if (this.project.zoomLevel < 1)
+          this.project.zoomLevel = 1
+        if (this.project.zoomLevel > 50)
+          this.project.zoomLevel = 50
       }
     }, 1)
   }

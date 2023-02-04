@@ -1,14 +1,22 @@
 interface IProject {
-    name?: string
-    startTime?: number
-    entries: IEntry
+    leftEnd: number
+    entries: IEntry[]
+    connections: IConnection[],
+    zoomLevel: number
 }
 
 interface IEntry {
     id: number
     title: string
-    comment?: string
     timeStamp: number
+    comment?: string
+    color?: string
+}
+
+interface IConnection {
+    from: number
+    to: number
+    color?: string
 }
 
 interface INotification {
