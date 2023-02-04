@@ -2,7 +2,7 @@
 
 A vue3 project that lets you build a timeline.
 
-### Preview
+### Preview (Old version)
 
 https://streamable.com/cllgwp
 
