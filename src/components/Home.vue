@@ -1,23 +1,29 @@
 <template>
-  <!-- <h1 class="text-white">{{ zoomLevel }}</h1> -->
   <Notifications ref="notifications" />
+  <!-- zoom -->
+  <h1
+    v-if="!createSection"
+    class="dark:text-white text-gray-800 absolute z-30 left-5 top-5 text-xl transition duration-300">
+    <icon icon="magnifying-glass" />
+    {{ project.zoomLevel }}
+  </h1>
   <div
     v-if="createSection"
-    class="z-[35] absolute top-5 left-5 w-[15rem] bg-gray-600 border-gray-500 border-2 rounded p-3 text-white flex flex-col gap-1">
+    class="z-[35] absolute top-5 left-5 w-[15rem] bg-gray-100 dark:bg-gray-600 border-gray-300 dark:border-gray-500 border-2 rounded p-3 dark:text-white text-black flex flex-col gap-1 transition duration-300">
     <!-- CREATE -->
     <h1>Eintrag erstellen</h1>
     <input
-      class="input w-full"
+      class="input w-full dark:bg-gray-500 dark:border-gray-400 bg-gray-200 border-gray-400"
       placeholder="Titel"
       type="text"
       v-model="input_create_title" />
     <textarea
-      class="input w-full resize-none h-[10rem]"
+      class="input w-full resize-none h-[10rem] dark:bg-gray-500 dark:border-gray-400 bg-gray-200 border-gray-400"
       placeholder="Text"
       v-model="input_create_comment">
     </textarea>
     <input
-      class="input w-full"
+      class="input w-full dark:bg-gray-500 dark:border-gray-400 bg-gray-200 border-gray-400"
       placeholder="Titel"
       type="date"
       v-model="input_create_date" />
@@ -26,18 +32,18 @@
       class="border-2 w-full rounded py-2"
       value="Bestätigen"
       @click="create"
-      :class="isCreateFormValid() ? 'bg-green-500 border-green-600 cursor-pointer hover:bg-green-600 hover:border-green-500 transition duration-300' : 'bg-gray-500 border-gray-400 cursor-not-allowed'" />
+      :class="isCreateFormValid() ? 'bg-green-500 border-green-600 cursor-pointer hover:bg-green-600 hover:border-green-500 transition duration-300' : 'bg-gray-200 dark:bg-gray-500 border-gray-400 cursor-not-allowed'" />
   </div>
-  <div class="w-screen h-screen flex justify-center items-center text-white select-none">
+  <div class="w-screen h-screen flex justify-center items-center dark:text-white text-black transition duration-300 select-none">
     <div class="absolute right-5 bottom-5 flex justify-center gap-2">
       <!-- CONTROLS -->
       <icon
         icon="plus"
         v-tooltip="'Eintrag erstellen'"
         @click="toggleCreateSection"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
+        class="p-3 text-lg bg-gray-100 dark:bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-300 hover:dark:bg-gray-500 hover:border-gray-600 transition duration-300" />
       <div
-        class="p-3 flex items-center justify-center rounded bg-gray-600 border-gray-500 border-2 cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300"
+        class="p-3 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-600 border-gray-500 border-2 cursor-pointer hover:bg-gray-300 hover:dark:bg-gray-500 hover:border-gray-600 transition duration-300"
         v-tooltip="'Projekt laden'"
         @click="uploadFile">
         <icon icon="cloud-upload" />
@@ -52,30 +58,36 @@
         icon="download"
         v-tooltip="'Projekt speichern'"
         @click="save"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
+        class="p-3 text-lg bg-gray-100 dark:bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-300 hover:dark:bg-gray-500 hover:border-gray-600 transition duration-300" />
       <icon
         icon="arrow-left"
         v-tooltip="'Nach links scrollen'"
         @mouseover="setScroll(-1)"
         @mouseleave="setScroll(undefined)"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
+        class="p-3 text-lg bg-gray-100 dark:bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-300 hover:dark:bg-gray-500 hover:border-gray-600 transition duration-300" />
       <icon
         icon="arrow-right"
         v-tooltip="'Nach rechts scrollen'"
         @mouseover="setScroll(1)"
         @mouseleave="setScroll(undefined)"
-        class="p-3 text-lg bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-500 hover:border-gray-600 transition duration-300" />
+        class="p-3 text-lg bg-gray-100 dark:bg-gray-600 border-gray-500 border-2 rounded cursor-pointer hover:bg-gray-300 hover:dark:bg-gray-500 hover:border-gray-600 transition duration-300" />
+      <div
+        class="p-3 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-600 border-gray-500 border-2 cursor-pointer hover:bg-gray-300 hover:dark:bg-gray-500 hover:border-gray-600 transition duration-300"
+        v-tooltip="'Nacht- / Tagmodus umschalten'"
+        @click="toggleDark()">
+        <icon :icon="isDark ? 'moon' : 'sun'" />
+      </div>
     </div>
     <div
       v-if="editedEntry"
       class="absolute z-40 w-screen h-screen bg-black bg-opacity-75 flex items-center justify-center">
-      <div class="bg-gray-800 border-gray-700 border-2 w-[30rem] rounded p-3">
+      <div class="bg-gray-300 dark:bg-gray-800 dark:border-gray-700 border-gray-400 border-2 w-[30rem] rounded p-3">
         <div class="flex justify-between items-center">
-          <h1 class="font-semibold text-lg">Eintrag Bearbeiten</h1>
+          <h1 class="font-semibold text-lg dark:text-white">Eintrag Bearbeiten</h1>
           <div
             @click="editEntry(undefined)"
             v-tooltip="'Schließen'"
-            class="bg-red-500 border-2 border-red-600 w-8 h-8 rounded flex justify-center items-center cursor-pointer">
+            class="bg-red-500 border-2 border-red-600 w-8 h-8 rounded flex justify-center items-center cursor-pointer text-white">
             <icon icon="xmark" />
           </div>
         </div>
@@ -85,24 +97,24 @@
             maxlength="50"
             minlength="1"
             v-model="editedEntry.title"
-            class="input" />
+            class="input dark:bg-gray-600 dark:border-gray-700" />
           <textarea
             placeholder="Beschreibung"
             v-model="editedEntry.comment"
-            class="input resize-y min-h-[5rem] max-h-[20rem]"></textarea>
+            class="input resize-y min-h-[5rem] max-h-[20rem] dark:bg-gray-600 dark:border-gray-700"></textarea>
           <div class="flex justify-between items-center">
             <input
               type="date"
               v-model="input_edit_date"
-              class="input w-[47.5%]" />
+              class="input w-[47.5%] dark:bg-gray-600 dark:border-gray-700 " />
             <input
               type="color"
               v-model="editedEntry.color"
-              class="w-[47.5%]" />
+              class="w-[47.5%] dark:bg-gray-600 dark:border-gray-700" />
           </div>
           <button
             @click="deleteEntry()"
-            class="bg-red-600 border-red-700 border-2 rounded py-2"
+            class="bg-red-600 border-red-700 border-2 rounded py-2 text-white"
             v-tooltip="'NICHT RÜCKGÄNGIG ZU MACHEN'">
             Eintrag LÖSCHEN
           </button>
@@ -111,11 +123,11 @@
     </div>
     <div class="absolute z-10 bottom-1/3">
       <!-- ZEITSTRAHL -->
-      <div class="w-screen h-0.5 bg-white">
+      <div class="w-screen h-0.5 dark:bg-white bg-black transition duration-300">
         <div
           v-for="(time, index) in getVisibleDates()"
           :key="index"
-          class="absolute"
+          class="absolute dark:text-white text-black transition duration-300"
           :style="`left: ${time[1]}%;`">
           <h1>{{ time[0] }}</h1>
         </div>
@@ -129,9 +141,9 @@
         :ref="`entry-${index}`"
         @click="editEntry(entry)"
         v-tooltip="'Klicke, um zu bearbeiten'"
-        class="border-gray-500 border-2 rounded-t absolute hover:z-30 p-3 flex flex-col gap-2.5 cursor-pointer"
+        class="dark:border-gray-500 border-gray-400 border-2 rounded-t absolute hover:z-30 p-3 flex flex-col gap-2.5 cursor-pointer"
         :style="`left: ${getXPosition(entry)}%; background: ${getBG(entry)};`">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center text-black dark:text-white transition duration-300">
           <h1 class="font-semibold text-lg">
             {{ entry.title }}
           </h1>
@@ -150,29 +162,35 @@
 
 const YEAR = 31_536_000_000
 const DATES_VISIBLE = 10
-const ZOOM_MIN = 0.1
+const ZOOM_MIN = 2
 const ZOOM_MAX = 200
 
 import { defineComponent } from 'vue'
 import Notifications from './Notifications.vue'
 import { EmptyProject, isIProject } from '@/utils/emptyProject'
+import { useDark, useToggle } from '@vueuse/core'
 
 export default defineComponent({
   components: { Notifications },
   data() {
     return {
       project: EmptyProject,
-      scrollYears: undefined as undefined | 1 | -1,
+      scrollYears: undefined as Nullable<1 | -1>,
       createSection: false,
-      input_create_title: undefined as string | undefined,
-      input_create_comment: undefined as string | undefined,
-      input_create_date: undefined as string | undefined,
-      input_edit_date: undefined as string | undefined,
+      input_create_title: undefined as Nullable<string>,
+      input_create_comment: undefined as Nullable<string>,
+      input_create_date: undefined as Nullable<string>,
+      input_edit_date: undefined as Nullable<string>,
       editedEntry: undefined as IEntry | undefined
     }
   },
+  setup() {
+    const isDark = useDark()
+    const toggleDark = useToggle(isDark)
+    return { isDark, toggleDark }
+  },
   watch: {
-    input_edit_date(val: string | undefined) {
+    input_edit_date(val: Nullable<string>) {
       if (!val) return
       this.editedEntry!.timeStamp = Date.parse(val)
     }
@@ -188,7 +206,7 @@ export default defineComponent({
     getVisibleEntries(): IEntry[] {
       return this.project.entries.filter(e => (e.timeStamp > this.project.leftEnd) && (e.timeStamp < this.getRightEnd()))
     },
-    setScroll(years: 1 | -1 | undefined) {
+    setScroll(years: Nullable<1 | -1>) {
       this.scrollYears = years
     },
     getVisibleDates(): [string, number][] {
@@ -200,7 +218,7 @@ export default defineComponent({
       const posOffsetPerDate = 100 / DATES_VISIBLE
       for (let i=0; i<DATES_VISIBLE; i++) {
         const timeStamp = left + (i * timeOffsetPerDate)
-        const display = new Date(timeStamp).toLocaleDateString()
+        const display = this.stringify(timeStamp)
         const x = i * posOffsetPerDate
         res.push([ display, x ])
       }
@@ -218,7 +236,11 @@ export default defineComponent({
       return res
     },
     getBG(entry: IEntry) {
-      return entry.color ? entry.color : 'rgb(75, 85, 99)'
+      return entry.color
+        ? entry.color
+        : this.isDark
+          ? 'rgb(75, 85, 99)'
+          : 'rgb(250, 250, 250)'
     },
     async handleFileUpload() {
       try {
@@ -282,11 +304,28 @@ export default defineComponent({
       const index = this.project.entries.indexOf(entry)
       this.project.entries.splice(index, 1)
     },
-    editEntry(entry: IEntry | undefined) {
+    editEntry(entry: Nullable<IEntry>) {
       this.editedEntry = entry
     },
     handleScroll(ev: WheelEvent) {
+
       this.project.zoomLevel += ev.deltaY / 100
+      
+      if (ev.ctrlKey) {
+        ev.preventDefault()
+        
+        // zoom in at cursor pos
+        const left = this.project.leftEnd
+        const right = this.getRightEnd()
+        const a = left + (Math.abs(left - right) / window.screen.width * ev.clientX)
+        const b = left
+        const c = right
+        const m = Math.abs(b - c) / 2
+        const v1 = a - b
+        const v2 = v1 - m
+        this.project.leftEnd += v2
+      }
+
       if (this.project.zoomLevel < ZOOM_MIN)
         this.project.zoomLevel = ZOOM_MIN
       if (this.project.zoomLevel > ZOOM_MAX)
@@ -301,7 +340,7 @@ export default defineComponent({
     }, 1)
 
     // zoom
-    window.addEventListener('wheel', this.handleScroll)
+    window.addEventListener('wheel', this.handleScroll, { passive: false })
   }
 })
 </script>

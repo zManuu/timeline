@@ -7,16 +7,8 @@
   padding-right: 0.5rem;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
-  background: rgb(75 85 99);
   border-width: 2px;
   border-radius: 0.25rem;
-  border-color: rgb(107 114 128);
-  color: white;
-}
-
-.input2 {
-  background: rgb(75 85 99);
-  color: white;
 }
 
 ::-webkit-scrollbar {

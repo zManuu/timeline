@@ -32,3 +32,5 @@ interface INotificationType {
     darkerColor: string
     icon: string
 }
+
+type Nullable<T> = T | undefined
